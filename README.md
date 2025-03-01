@@ -28,9 +28,13 @@ python3 main.py
 ## Uso:
 
 0 - Clique normal(Por padrão ele faz essa ação)
+
 1 - Clica com o botão direito do mouse
+
 2 - Dá dois cliques
+
 3 - Dá três cliques
+
 4 - Ativa o Hold
 
 Para escolher uma célula escreva as duas letras dentro dela
