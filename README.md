@@ -43,9 +43,3 @@ Para escolher o lugar específico escolha uma nova letra dentre as opções
 
 ## 📝 Licença
 Livre para uso e modificação.
-```
-
-### Como usar:
-1. Crie/copie este conteúdo em um arquivo chamado `README.md` no seu projeto.
-2. Substitua os textos descritivos (como "My Python Application") conforme necessário.
-3. Seu README estará pronto para o GitHub com formatação adequada!
