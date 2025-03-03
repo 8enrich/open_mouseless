@@ -25,14 +25,9 @@
     pip install -r requirements.txt
     ```
 
-4. Permita a execução do script de instalação:
+4. Compile:
     ```bash
-    chmod +x install.sh
-    ```
-
-5. Execute o script de instalação:
-    ```bash
-    ./install.sh
+    pyinstaller open_mouseless.spec
     ```
 
 ---
@@ -41,7 +36,7 @@
 
 Após instalar, execute:
 ```bash
-./build/open_mouseless
+./dist/open_mouseless/open_mouseless
 ```
 
 ## Uso:
