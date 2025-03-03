@@ -27,7 +27,7 @@
 
 4. Compile:
     ```bash
-    pyinstaller open_mouseless.spec
+    python3 setup.py build
     ```
 
 ---
@@ -36,7 +36,7 @@
 
 Após instalar, execute:
 ```bash
-./dist/open_mouseless/open_mouseless
+./build/exe.linux-x86_64-3.12/open_mouseless
 ```
 
 ## Uso:
