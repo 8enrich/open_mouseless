@@ -1,7 +1,7 @@
 ## 🛠️ Requisitos
 
 - **Python 3.x** (recomendado: 3.8 ou superior).
-- Dependências listadas em `requirements.txt`:
+- Dependências não listadas em `requirements.txt`:
   ```txt
   picom
   ```
@@ -10,19 +10,38 @@
 
 ## ⚙️ Instalação
 
-1. Instale as dependências com o comando:
+1. Crie uma venv com o comando:
    ```bash
-   pip install -r requirements.txt --break-system-packages
+   python3 -m venv venv
    ```
-   > **Nota:** O flag `--break-system-packages` é necessário em alguns sistemas operacionais (ex.: Linux) para permitir instalação global de pacotes.
+
+2. Entre na venv:
+    ```bash
+    source venv/bin/activate
+    ```
+
+3. Instale as dependências:
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+4. Permita a execução do script de instalação:
+    ```bash
+    chmod +x install.sh
+    ```
+
+5. Execute o script de instalação:
+    ```bash
+    ./install.sh
+    ```
 
 ---
 
 ## 🚀 Execução
 
-Após instalar as dependências, execute:
+Após instalar, execute:
 ```bash
-python3 main.py
+./build/open_mouseless
 ```
 
 ## Uso:
