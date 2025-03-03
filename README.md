@@ -36,7 +36,7 @@
 
 Após instalar, execute:
 ```bash
-./build/exe.linux-x86_64-3.12/open_mouseless
+./bin/open_mouseless
 ```
 
 ## Uso:

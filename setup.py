@@ -6,7 +6,8 @@ setup(
     options={
         'build_exe': {
             'includes': ['pyautogui', 'PyQt5'],
-        }
+            'build_exe': 'bin'
+        },
     },
     executables = [Executable("main.py", target_name="open_mouseless")]
 )
