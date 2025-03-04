@@ -1,10 +1,11 @@
-import sys
+from sys import exit, argv
+from filelock import FileLock
 from pyautogui import click, doubleClick, dragTo
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel
 from PyQt5.QtCore import Qt, QTimer, QRect, QPoint
 from PyQt5.QtGui import QPainter, QColor, QBrush, QFont, QCursor, QPixmap
 
-class OverlayWindow(QWidget):
+class OpenMouseless(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Mouseless")
@@ -256,7 +257,14 @@ class OverlayWindow(QWidget):
         QApplication.quit()
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    overlay = OverlayWindow()
+    lock_file = ".open_mouseless.lock"
+
+    lock = FileLock(lock_file)
+    try:
+        lock.acquire(timeout=0)
+    except Exception:
+        exit()
+    app = QApplication(argv)
+    overlay = OpenMouseless()
     overlay.show()
-    sys.exit(app.exec_())
+    exit(app.exec_())
