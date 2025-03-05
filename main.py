@@ -1,8 +1,8 @@
 from sys import exit, argv
 from filelock import FileLock
 from pyautogui import click, doubleClick, dragTo
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel
-from PyQt5.QtCore import Qt, QTimer, QRect, QPoint
+from PyQt5.QtWidgets import QApplication, QDesktopWidget, QWidget, QLabel
+from PyQt5.QtCore import QPoint, QRectF, Qt, QTimer
 from PyQt5.QtGui import QPainter, QColor, QBrush, QFont, QCursor, QPixmap
 
 class OpenMouseless(QWidget):
@@ -24,6 +24,8 @@ class OpenMouseless(QWidget):
             "3": "Triple click",
             "4": "Hold"
         }
+        self.inner_cols = 7
+        self.inner_rows = 3
         
         self.keyboard_layout = [
             ['q', 'w', 'e', 'r', 't', 'y', 'u'],
@@ -45,8 +47,8 @@ class OpenMouseless(QWidget):
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setAttribute(Qt.WA_TransparentForMouseEvents)
-        screen = QApplication.primaryScreen()
-        self.setGeometry(0, 0, screen.size().width() + int(0.21/100 * screen.size().width()), screen.size().height())
+        screen = QDesktopWidget().screenGeometry()
+        self.setGeometry(0, 0, screen.width(), screen.height())
 
     def _create_keyboard_map(self):
         return {char: (sub_row, sub_col) 
@@ -68,8 +70,8 @@ class OpenMouseless(QWidget):
 
     def resizeEvent(self, a0):
         super().resizeEvent(a0)
-        self.cell_width = self.width() // 26
-        self.cell_height = self.height() // 26
+        self.cell_width = self.width() / 26
+        self.cell_height = self.height() / 26
         self._update_buffer()
 
     def _update_buffer(self):
@@ -82,6 +84,9 @@ class OpenMouseless(QWidget):
         
         square_color = QColor(0, 0, 0, 25)
         border_color = QColor(255, 255, 255, 25)
+
+        inner_square_width = self.cell_width / self.inner_cols
+        inner_square_height = self.cell_height / self.inner_rows
         
         for row in range(26):
             for col in range(26):
@@ -89,19 +94,14 @@ class OpenMouseless(QWidget):
                 y = row * self.cell_height
                 
                 painter.setPen(border_color)
-                painter.drawRect(x, y, self.cell_width, self.cell_height)
+                cell_rect = QRectF(x, y, self.cell_width, self.cell_height)
+                painter.drawRect(cell_rect)
                 
-                inner_square_width = self.cell_width // 7
-                inner_square_height = self.cell_height // 3
-                for i in range(7):
-                    for j in range(3):
+                for i in range(self.inner_cols):
+                    for j in range(self.inner_rows):
                         painter.setBrush(QBrush(square_color))
-                        painter.drawRect(
-                            x + i * inner_square_width,
-                            y + j * inner_square_height,
-                            inner_square_width,
-                            inner_square_height
-                        )
+                        inner_rect = QRectF(x + i * inner_square_width, y + j * inner_square_height, inner_square_width, inner_square_height)
+                        painter.drawRect(inner_rect)
         painter.end()
 
     def paintEvent(self, a0):
@@ -120,6 +120,10 @@ class OpenMouseless(QWidget):
         painter.setFont(QFont('Arial', 14, QFont.Bold))
         painter.setPen(QColor(255, 255, 255, 150))
         alphabet = list(self.alphabet.keys())
+
+        cell_height_over_5 = self.cell_height/5
+        half_of_cell_width = self.cell_width/2
+        half_of_cell_height = self.cell_height/2
         
         for row in range(26):
             for col in range(26):
@@ -127,11 +131,11 @@ class OpenMouseless(QWidget):
                 y = row * self.cell_height
                 
                 painter.drawText(
-                    QRect(x, y + self.cell_height//5, self.cell_width//2, self.cell_height//2),
+                    QRectF(x, y + cell_height_over_5, half_of_cell_width, half_of_cell_height),
                     Qt.AlignCenter, alphabet[row]
                 )
                 painter.drawText(
-                    QRect(x + self.cell_width//2, y + self.cell_height//5, self.cell_width//2, self.cell_height//2),
+                    QRectF(x + half_of_cell_width, y + cell_height_over_5, half_of_cell_width, half_of_cell_height),
                     Qt.AlignCenter, alphabet[col]
                 )
 
@@ -141,14 +145,17 @@ class OpenMouseless(QWidget):
         
         painter.setFont(QFont('Arial', 10))
         painter.setPen(QColor(255, 255, 255, 200))
+
+        cols_size = self.cell_width / self.inner_cols
+        rows_size = self.cell_height / self.inner_rows
         
-        for sub_row in range(3):
-            for sub_col in range(7):
+        for sub_row in range(self.inner_rows):
+            for sub_col in range(self.inner_cols):
                 try:
                     char = self.keyboard_layout[sub_row][sub_col]
-                    x = cell_x + sub_col * (self.cell_width // 7)
-                    y = cell_y + sub_row * (self.cell_height // 3)
-                    painter.drawText(QRect(x, y, self.cell_width//7, self.cell_height//3), 
+                    x = cell_x + sub_col * cols_size
+                    y = cell_y + sub_row * rows_size
+                    painter.drawText(QRectF(x, y, cols_size, rows_size), 
                                    Qt.AlignCenter, char.upper())
                 except IndexError:
                     pass
@@ -235,13 +242,13 @@ class OpenMouseless(QWidget):
             return
             
         sub_row, sub_col = self.keyboard_positions[self.letter3]
-        cell_width = self.width() // 26
-        cell_height = self.height() // 26
+        cell_width = self.width() / 26
+        cell_height = self.height() / 26
         
-        x = (self.selected_col * cell_width) + (sub_col * (cell_width // 7)) + (cell_width // 14)
-        y = (self.selected_row * cell_height) + (sub_row * (cell_height // 3)) + (cell_height // 6)
+        x = (self.selected_col * cell_width) + (sub_col * (cell_width / self.inner_cols)) + (cell_width / (2 * self.inner_cols))
+        y = (self.selected_row * cell_height) + (sub_row * (cell_height / self.inner_rows)) + (cell_height / (2 * self.inner_rows))
         
-        global_pos = self.mapToGlobal(QPoint(x, y))
+        global_pos = self.mapToGlobal(QPoint(int(x), int(y)))
         if self.hold:
             self.hide()
             dragTo(global_pos.x(), global_pos.y())
