@@ -1,9 +1,13 @@
-from sys import exit, argv
+import sys
 from filelock import FileLock
 from pyautogui import click, doubleClick, dragTo
 from PyQt5.QtWidgets import QApplication, QDesktopWidget, QWidget, QLabel
 from PyQt5.QtCore import QPoint, QRectF, Qt, QTimer
 from PyQt5.QtGui import QPainter, QColor, QBrush, QFont, QCursor, QPixmap
+from os import path
+from json import load
+
+SETTINGS_FILE_PATH = path.join(path.dirname(sys.executable) if getattr(sys, 'frozen', False) else path.dirname(__file__)) + '/settings.json'
 
 class OpenMouseless(QWidget):
     def __init__(self):
@@ -24,14 +28,18 @@ class OpenMouseless(QWidget):
             "3": "Triple click",
             "4": "Hold"
         }
-        self.inner_cols = 7
-        self.inner_rows = 3
-        
+
+        with open(SETTINGS_FILE_PATH, 'r') as file:
+            settings = load(file)
+        language = settings.get("language", "EN")    
+
         self.keyboard_layout = [
-            ['q', 'w', 'e', 'r', 't', 'y', 'u'],
-            ['a', 's', 'd', 'f', 'g', 'h', 'j'],
-            ['z', 'x', 'c', 'v', 'b', 'n', 'm']
+            ['q', 'w', 'e', 'r', 'u', 'i', 'o', 'p'],
+            ['a', 's', 'd', 'f', 'j', 'k', 'l', ('ç' if "BR" in language else ';')],
+            ['z', 'x', 'c', 'v', 'm', ',', '.', (';' if "BR" in language else '?')]
         ]
+        self.inner_cols = len(self.keyboard_layout[0])
+        self.inner_rows = len(self.keyboard_layout)
         self.keyboard_positions = self._create_keyboard_map()
         
         self.buffer_pixmap = None
@@ -270,8 +278,8 @@ if __name__ == "__main__":
     try:
         lock.acquire(timeout=0)
     except Exception:
-        exit()
-    app = QApplication(argv)
+        sys.exit()
+    app = QApplication(sys.argv)
     overlay = OpenMouseless()
     overlay.show()
-    exit(app.exec_())
+    sys.exit(app.exec_())
