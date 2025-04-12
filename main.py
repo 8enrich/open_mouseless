@@ -197,6 +197,10 @@ class OpenMouseless(QWidget):
             self.reset_selection()
             self.update()
             return
+        if a0.key() == Qt.Key_Return:
+            self.hide()
+            click()
+            QApplication.quit()
 
         if self.selected_row == -1:
             self.handle_first_two_letters(a0)
