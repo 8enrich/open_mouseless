@@ -1,0 +1,13 @@
+[project]
+name = "open-mouseless"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "cx-freeze>=8.4.1",
+    "filelock>=3.20.0",
+    "pyautogui>=0.9.54",
+    "pyqt5>=5.15.11",
+    "pyqtkeybind>=0.0.9",
+]

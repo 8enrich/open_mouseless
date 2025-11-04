@@ -1,4 +1,0 @@
-PyQt5==5.15.11
-pyautogui==0.9.54
-cx_Freeze==7.2.10
-filelock==3.17.0
