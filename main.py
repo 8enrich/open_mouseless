@@ -9,6 +9,8 @@ from os import path
 from json import load
 
 SETTINGS_FILE_PATH = path.join(path.dirname(sys.executable) if getattr(sys, 'frozen', False) else path.dirname(__file__)) + '/settings.json'
+with open(SETTINGS_FILE_PATH, 'r') as file:
+    settings = load(file)
 
 class OpenMouseless(QWidget):
     def __init__(self):
@@ -30,8 +32,6 @@ class OpenMouseless(QWidget):
             "4": "Hold"
         }
 
-        with open(SETTINGS_FILE_PATH, 'r') as file:
-            settings = load(file)
         language = settings.get("language", "EN")    
 
         self.keyboard_layout = [
@@ -317,11 +317,13 @@ if __name__ == "__main__":
         lock.acquire(timeout=0)
     except Exception:
         sys.exit()
+    show_hotkey = settings.get("show_hotkey", "Meta+m")
+    quit_hotkey = settings.get("quit_hotkey", "Ctrl+Alt+q")
     app = QApplication(sys.argv)
     overlay = OpenMouseless()
     hotkey = QtKeyBinder(win_id=None)
-    hotkey.register_hotkey("Ctrl+Alt+M", overlay.show)
-    hotkey.register_hotkey("Ctrl+Alt+Q", app.quit)
+    hotkey.register_hotkey(show_hotkey, overlay.show)
+    hotkey.register_hotkey(quit_hotkey, app.quit)
     app.exec_()
-    hotkey.unregister_hotkey("Ctrl+Alt+M")
-    hotkey.unregister_hotkey("Ctrl+Alt+Q")
+    hotkey.unregister_hotkey(show_hotkey)
+    hotkey.unregister_hotkey(quit_hotkey)
