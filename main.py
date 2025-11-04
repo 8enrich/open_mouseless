@@ -227,7 +227,6 @@ class OpenMouseless(QWidget):
         if a0.key() == Qt.Key_Return:
             self.hide()
             click()
-            QApplication.quit()
 
         if self.selected_row == -1:
             self.handle_first_two_letters(a0)
@@ -249,7 +248,10 @@ class OpenMouseless(QWidget):
         key = event.text().upper()
         if key in self.numbers and not self.hold:
             self.action = key
-            self.show_flash_message(self.actions_text[self.action])
+            actions_text = self.actions_text.get(self.action)
+            if not actions_text:
+                return
+            self.show_flash_message(actions_text)
             return
         if key not in self.alphabet.keys():
             return
