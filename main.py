@@ -74,6 +74,7 @@ class OpenMouseless(QWidget):
     def show(self):
         self._setup_window_position()
         super().show()
+        self.activateWindow()
 
     def _setup_window_position(self):
         screen = QDesktopWidget().screenGeometry()
