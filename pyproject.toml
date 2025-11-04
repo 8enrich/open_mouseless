@@ -1,7 +1,7 @@
 [project]
 name = "open-mouseless"
-version = "0.1.0"
-description = "Add your description here"
+version = "0.3.0"
+description = "Projeto para substituir o uso do mouse"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -10,4 +10,5 @@ dependencies = [
     "pyautogui>=0.9.54",
     "pyqt5>=5.15.11",
     "pyqtkeybind>=0.0.9",
+    "python-xlib>=0.33",
 ]

@@ -351,7 +351,7 @@ if __name__ == "__main__":
     quit_hotkey = settings.get("quit_hotkey", "Ctrl+Alt+q")
     app = QApplication(sys.argv)
     overlay = OpenMouseless()
-    hotkey = QtKeyBinder(win_id=overlay.winId())
+    hotkey = QtKeyBinder(win_id=None)
     hotkey.register_hotkey(show_hotkey, overlay.show)
     hotkey.register_hotkey(quit_hotkey, app.quit)
     app.exec_()
