@@ -76,12 +76,20 @@ class OpenMouseless(QWidget):
         super().show()
         self.activateWindow()
 
+    def hide_and_reset(self):
+        self.hide()
+        self.reset_selection()
+
     def _setup_window_position(self):
         screen = QDesktopWidget().screenGeometry()
         self.setGeometry(0, 0, screen.width(), screen.height())
 
     def _setup_window(self):
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
+        self.setWindowFlags(
+            Qt.FramelessWindowHint 
+            | Qt.WindowStaysOnTopHint 
+            | Qt.Tool 
+        )
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setAttribute(Qt.WA_TransparentForMouseEvents)
         self._setup_window_position()
@@ -220,17 +228,17 @@ class OpenMouseless(QWidget):
 
     def keyPressEvent(self, a0):
         if a0.key() == Qt.Key_Escape:
-            if self.letter1 == "":
-                self.hide()
-            self.reset_selection()
+            if not self.letters:
+                self.hide_and_reset()
+            if len(self.letters) < 3:
+                self.reset_selection()
             self.update()
             return
         if a0.key() == Qt.Key_Return:
-            self.hide()
-            self.reset_selection()
+            self.hide_and_reset()
             click()
 
-        if self.selected_row == -1:
+        if len(self.letters) < 2:
             self.handle_first_two_letters(a0)
         else:
             self.handle_third_letter(a0)
@@ -238,9 +246,7 @@ class OpenMouseless(QWidget):
         self.update()
 
     def reset_selection(self):
-        self.letter1 = ""
-        self.letter2 = ""
-        self.letter3 = ""
+        self.letters = []
         self.selected_row = -1
         self.selected_col = -1
         self.action = "0"
@@ -254,37 +260,33 @@ class OpenMouseless(QWidget):
             if not actions_text:
                 return
             self.show_flash_message(actions_text)
-            return
         if key not in self.alphabet.keys():
             return
 
-        if not self.letter1:
-            self.letter1 = key
-            return
-        if not self.letter2:
-            self.letter2 = key
-            self.selected_row = self.alphabet[self.letter1]
-            self.selected_col = self.alphabet[self.letter2]
+        self.letters.append(key)
+        if len(self.letters) == 2:
+            self.selected_row = self.alphabet[self.letters[0]]
+            self.selected_col = self.alphabet[self.letters[1]]
 
-    def get_third_letter(self, event):
-        if event.key() == Qt.Key_Space:
-            self.letter3 = 'f'
+    def get_third_letter(self, a0):
+        if a0.key() == Qt.Key_Space:
+            self.letters.append('f')
             return
-        key = event.text().lower()
+        key = a0.text().lower()
         valid_letters = self.keyboard_positions.keys()
         if key in valid_letters:
-            self.letter3 = key
+            self.letters.append(key)
 
-    def handle_third_letter(self, event):
-        self.get_third_letter(event)
-        if self.letter3:
+    def handle_third_letter(self, key):
+        self.get_third_letter(key)
+        if len(self.letters) == 3:
             self.move_mouse_to_subcell()
 
     def move_mouse_to_subcell(self):
-        if self.letter3 not in self.keyboard_positions:
+        if self.letters[2] not in self.keyboard_positions:
             return
             
-        sub_row, sub_col = self.keyboard_positions[self.letter3]
+        sub_row, sub_col = self.keyboard_positions[self.letters[2]]
         cell_width = self.width() / 26
         cell_height = self.height() / 26
         
@@ -293,7 +295,7 @@ class OpenMouseless(QWidget):
         
         global_pos = self.mapToGlobal(QPoint(int(x), int(y)))
         if self.hold:
-            self.hide()
+            self.hide_and_reset()
             dragTo(global_pos.x(), global_pos.y())
         else:
             QCursor.setPos(global_pos)
@@ -307,7 +309,7 @@ class OpenMouseless(QWidget):
                 return
             function, args = item
             function(**args)
-        self.reset_selection()
+            self.reset_selection()
 
 class WinEventFilter(QAbstractNativeEventFilter):
     def __init__(self, keybinder):
@@ -349,7 +351,7 @@ if __name__ == "__main__":
     quit_hotkey = settings.get("quit_hotkey", "Ctrl+Alt+q")
     app = QApplication(sys.argv)
     overlay = OpenMouseless()
-    hotkey = QtKeyBinder(win_id=None)
+    hotkey = QtKeyBinder(win_id=overlay.winId())
     hotkey.register_hotkey(show_hotkey, overlay.show)
     hotkey.register_hotkey(quit_hotkey, app.quit)
     app.exec_()
