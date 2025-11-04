@@ -1,33 +1,19 @@
 ## 🛠️ Requisitos
 
 - **Python 3.x** (recomendado: 3.8 ou superior).
-- Dependências não listadas em `requirements.txt`:
+- Dependências:
   ```txt
   picom
+  uv
   ```
 
 ---
 
 ## ⚙️ Instalação
 
-1. Crie uma venv com o comando:
-   ```bash
-   python3 -m venv venv
-   ```
-
-2. Entre na venv:
+1. Compile:
     ```bash
-    source venv/bin/activate
-    ```
-
-3. Instale as dependências:
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-4. Compile:
-    ```bash
-    python3 setup.py build
+    uv run setup.py build
     ```
 
 ---

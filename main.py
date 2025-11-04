@@ -1,21 +1,24 @@
 import sys
 from filelock import FileLock
 from pyautogui import click, doubleClick, dragTo
-from PyQt5.QtWidgets import QApplication, QDesktopWidget, QWidget, QLabel
+from PyQt5.QtWidgets import QApplication, QDesktopWidget, QWidget, QLabel, QSystemTrayIcon, QMenu, QAction
 from PyQt5.QtCore import QPoint, QRectF, Qt, QTimer, QAbstractNativeEventFilter, QAbstractEventDispatcher
-from PyQt5.QtGui import QPainter, QColor, QBrush, QFont, QCursor, QPixmap
+from PyQt5.QtGui import QPainter, QColor, QBrush, QFont, QCursor, QPixmap, QIcon
 from pyqtkeybind import keybinder
 from os import path
 from json import load
 
-SETTINGS_FILE_PATH = path.join(path.dirname(sys.executable) if getattr(sys, 'frozen', False) else path.dirname(__file__)) + '/settings.json'
+FILE_PATH = path.join(path.dirname(sys.executable) if getattr(sys, 'frozen', False) else path.dirname(__file__))
+SETTINGS_FILE_PATH = FILE_PATH + '/settings.json'
+IMAGE_FILE_PATH = FILE_PATH + '/assets/mouse-cursor.jpg'
+TITLE = "OpenMouseless"
 with open(SETTINGS_FILE_PATH, 'r') as file:
     settings = load(file)
 
 class OpenMouseless(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Mouseless")
+        self.setWindowTitle(TITLE)
         self.alphabet = {key: value for value, key in enumerate("ABCDEFGHIJKLMNOPQRSTUVWXYZ")}
         self.numbers = "01234"
         self.functions = {
@@ -31,6 +34,22 @@ class OpenMouseless(QWidget):
             "3": "Triple click",
             "4": "Hold"
         }
+
+        self.tray_icon = QSystemTrayIcon(QIcon(IMAGE_FILE_PATH), self)
+        self.tray_icon.setToolTip(TITLE)
+
+        menu = QMenu()
+
+        open_action = QAction("Open", self)
+        open_action.triggered.connect(self.show)
+        menu.addAction(open_action)
+
+        quit_action = QAction("Quit", self)
+        quit_action.triggered.connect(QApplication.quit)
+        menu.addAction(quit_action)
+
+        self.tray_icon.setContextMenu(menu)
+        self.tray_icon.show()
 
         language = settings.get("language", "EN")    
 
@@ -321,7 +340,7 @@ if __name__ == "__main__":
         lock.acquire(timeout=0)
     except Exception:
         sys.exit()
-    show_hotkey = settings.get("show_hotkey", "Meta+m")
+    show_hotkey = settings.get("show_hotkey", "Ctrl+m")
     quit_hotkey = settings.get("quit_hotkey", "Ctrl+Alt+q")
     app = QApplication(sys.argv)
     overlay = OpenMouseless()
