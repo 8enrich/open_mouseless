@@ -2,8 +2,9 @@ import sys
 from filelock import FileLock
 from pyautogui import click, doubleClick, dragTo
 from PyQt5.QtWidgets import QApplication, QDesktopWidget, QWidget, QLabel
-from PyQt5.QtCore import QPoint, QRectF, Qt, QTimer
+from PyQt5.QtCore import QPoint, QRectF, Qt, QTimer, QAbstractNativeEventFilter, QAbstractEventDispatcher
 from PyQt5.QtGui import QPainter, QColor, QBrush, QFont, QCursor, QPixmap
+from pyqtkeybind import keybinder
 from os import path
 from json import load
 
@@ -51,15 +52,22 @@ class OpenMouseless(QWidget):
         self._init_flash_label()
         self.reset_selection()
 
+    def show(self):
+        self._setup_window_position()
+        super().show()
+
+    def _setup_window_position(self):
+        screen = QDesktopWidget().screenGeometry()
+        self.setGeometry(0, 0, screen.width(), screen.height())
+
     def _setup_window(self):
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setAttribute(Qt.WA_TransparentForMouseEvents)
-        screen = QDesktopWidget().screenGeometry()
-        self.setGeometry(0, 0, screen.width(), screen.height())
+        self._setup_window_position()
 
     def _create_keyboard_map(self):
-        return {char: (sub_row, sub_col) 
+        return {char: (sub_row, sub_col)
                 for sub_row, row in enumerate(self.keyboard_layout) 
                 for sub_col, char in enumerate(row)}
 
@@ -193,7 +201,7 @@ class OpenMouseless(QWidget):
     def keyPressEvent(self, a0):
         if a0.key() == Qt.Key_Escape:
             if self.letter1 == "":
-                QApplication.quit()
+                self.hide()
             self.reset_selection()
             self.update()
             return
@@ -269,7 +277,37 @@ class OpenMouseless(QWidget):
             self.hide()
             function, args = self.functions[self.action]
             function(**args)
-        QApplication.quit()
+        self.reset_selection()
+
+class WinEventFilter(QAbstractNativeEventFilter):
+    def __init__(self, keybinder):
+        self.keybinder = keybinder
+        super().__init__()
+
+    def nativeEventFilter(self, eventType, message):
+        ret = self.keybinder.handler(eventType, message)
+        return ret, 0
+
+class EventDispatcher:
+    """Install a native event filter to receive events from the OS"""
+
+    def __init__(self, keybinder) -> None:
+        self.win_event_filter = WinEventFilter(keybinder)
+        self.event_dispatcher = QAbstractEventDispatcher.instance()
+        self.event_dispatcher.installNativeEventFilter(self.win_event_filter)
+
+class QtKeyBinder:
+    def __init__(self, win_id) -> None:
+        keybinder.init()
+        self.win_id = win_id
+
+        self.event_dispatcher = EventDispatcher(keybinder=keybinder)
+
+    def register_hotkey(self, hotkey: str, callback) -> None:
+        keybinder.register_hotkey(self.win_id, hotkey, callback)
+
+    def unregister_hotkey(self, hotkey: str) -> None:
+        keybinder.unregister_hotkey(self.win_id, hotkey)
 
 if __name__ == "__main__":
     lock_file = ".open_mouseless.lock"
@@ -281,5 +319,9 @@ if __name__ == "__main__":
         sys.exit()
     app = QApplication(sys.argv)
     overlay = OpenMouseless()
-    overlay.show()
-    sys.exit(app.exec_())
+    hotkey = QtKeyBinder(win_id=None)
+    hotkey.register_hotkey("Ctrl+Alt+M", overlay.show)
+    hotkey.register_hotkey("Ctrl+Alt+Q", app.quit)
+    app.exec_()
+    hotkey.unregister_hotkey("Ctrl+Alt+M")
+    hotkey.unregister_hotkey("Ctrl+Alt+Q")
