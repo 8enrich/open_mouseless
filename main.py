@@ -226,6 +226,7 @@ class OpenMouseless(QWidget):
             return
         if a0.key() == Qt.Key_Return:
             self.hide()
+            self.reset_selection()
             click()
 
         if self.selected_row == -1:
@@ -300,7 +301,10 @@ class OpenMouseless(QWidget):
                 self.hold = True
                 return
             self.hide()
-            function, args = self.functions[self.action]
+            item = self.functions.get(self.action)
+            if not item:
+                return
+            function, args = item
             function(**args)
         self.reset_selection()
 
@@ -314,8 +318,6 @@ class WinEventFilter(QAbstractNativeEventFilter):
         return ret, 0
 
 class EventDispatcher:
-    """Install a native event filter to receive events from the OS"""
-
     def __init__(self, keybinder) -> None:
         self.win_event_filter = WinEventFilter(keybinder)
         self.event_dispatcher = QAbstractEventDispatcher.instance()
